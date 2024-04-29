@@ -5,12 +5,35 @@ export const useTaskStore = defineStore('task', {
 
     state: () => ({
         tasksList: [],
-        loading: false
+        filter: 'all'
     }),
+
+    getters: {
+        filteredTasks: (state) => {
+
+          if (state.filter === 'completed') {
+
+            return state.tasksList.filter(task => task.completed);
+
+          } else if (state.filter === 'pending') {
+
+            return state.tasksList.filter(task => !task.completed);
+
+          }
+
+          return state.tasksList;
+        }
+    },
 
     actions: {
 
-        async addTask(taskData){
+        setFilter(filter) {
+            this.filter = filter;
+        },
+
+
+
+        addTask(taskData){
 
             //Activamos el loading
             this.loading = true;
@@ -21,15 +44,12 @@ export const useTaskStore = defineStore('task', {
                 ...taskData
             });
 
-            //Simulamos un tiempo de espera
-            await sleep(10);
-
             //Desactivamos el loading
             this.loading = false;
         },
 
 
-        async deleteTask(id){
+        deleteTask(id){
 
             //Activamos el loading
             this.loading = true;
@@ -37,15 +57,12 @@ export const useTaskStore = defineStore('task', {
             //Filtramos en la lista solo aquellos elementos que no sean el que queremos eliminar, asi simulamos la eliminacion
             this.tasksList = this.tasksList.filter(task => task.id !== id);
 
-            //Simulamos un tiempo de espera
-            await sleep(10);
-
             //Desactivamos el loading
             this.loading = false;
 
         },
 
-        async changeStatusTask(id){
+        changeStatusTask(id){
 
             //Activamos el loading
             this.loading = true;
@@ -61,9 +78,6 @@ export const useTaskStore = defineStore('task', {
                 const [completedTask] = this.tasksList.splice(index, 1);
                 this.tasksList.push(completedTask);
             }
-
-            //Simulamos un tiempo de espera
-            await sleep(10);
 
             //Desactivamos el loading
             this.loading = false;
