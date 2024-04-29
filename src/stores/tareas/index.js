@@ -1,40 +1,73 @@
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { generateID, sleep } from '../../utils';
 
-export const useTareaStore = defineStore('tarea', {
+export const useTaskStore = defineStore('task', {
 
     state: () => ({
-        tareas: []
+        tasksList: [],
+        loading: false
     }),
 
     actions: {
 
-        //Setters
-        //--------------------------------------------------------------------------------------------------------
-            setBookInfo(bookInfo) {
-                this.$state.bookInfo = bookInfo
-            },
+        async addTask(taskData){
 
-            setQuotes(quotesData) {
-                this.$state.quotes = quotesData
-            },
-        //--------------------------------------------------------------------------------------------------------
+            //Activamos el loading
+            this.loading = true;
 
-        //Getters
-        //--------------------------------------------------------------------------------------------------------
-            getBookInfo() {
-                return this.$state.bookInfo
-            },
+            //Agregamos la tarea a la lista
+            this.tasksList.push({
+                id: generateID(),
+                ...taskData
+            });
 
-            getQuotes() {
-                return this.$state.quotes
-            },
+            //Simulamos un tiempo de espera
+            await sleep(10);
 
-            resetBook() {
-                this.$state.bookInfo = ''
-                this.$state.quotes = []
+            //Desactivamos el loading
+            this.loading = false;
+        },
+
+
+        async deleteTask(id){
+
+            //Activamos el loading
+            this.loading = true;
+
+            //Filtramos en la lista solo aquellos elementos que no sean el que queremos eliminar, asi simulamos la eliminacion
+            this.tasksList = this.tasksList.filter(task => task.id !== id);
+
+            //Simulamos un tiempo de espera
+            await sleep(10);
+
+            //Desactivamos el loading
+            this.loading = false;
+
+        },
+
+        async changeStatusTask(id){
+
+            //Activamos el loading
+            this.loading = true;
+
+            //Encontramos el índice de la tarea en la lista
+            const index = this.tasksList.findIndex(task => task.id === id);
+
+            if (index !== -1) {
+                //Cambiamos el estado de completado
+                this.tasksList[index].completed = !this.tasksList[index].completed;
+
+                //Movemos la tarea modificada al final del arreglo
+                const [completedTask] = this.tasksList.splice(index, 1);
+                this.tasksList.push(completedTask);
             }
-        //--------------------------------------------------------------------------------------------------------
+
+            //Simulamos un tiempo de espera
+            await sleep(10);
+
+            //Desactivamos el loading
+            this.loading = false;
+        },
     },
     persist: true
 })
