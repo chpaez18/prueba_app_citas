@@ -50,7 +50,7 @@
                   <td class="text-center">
                     <button v-tooltip="'Marcar tarea como Completada'" v-if="!task.completed" @click="changeStatus(task.id)" class="bg-green-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-circle-check"></i></button>
                     {{''}}
-                    <button v-tooltip="'Modificar tarea'" @click="openModalForEdit(task)" class="bg-blue-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-pen-to-square"></i> </button>
+                    <button v-tooltip="'Modificar tarea'" v-if="!task.completed" @click="openModalForEdit(task)" class="bg-blue-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-pen-to-square"></i> </button>
                     {{''}}
                     <button v-tooltip="'Eliminar'" @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-trash-can"></i> </button>
                   </td>
@@ -198,6 +198,7 @@ import { useTaskStore } from '../../stores/tareas/index';
       //Cerramos el modal y reseteamos el formulario
       //----------------------------------------------------------------
         isModalOpen.value = false;
+        currentTaskId.value = null;
         resetForm();
       //----------------------------------------------------------------
 
