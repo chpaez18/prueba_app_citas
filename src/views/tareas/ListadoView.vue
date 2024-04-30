@@ -20,7 +20,7 @@
                 <!-- FIN Dropdown de filtro -->
 
                 <!-- Botón para agregar tarea -->
-                  <button @click="openModal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  <button @click="isModalOpen = true" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Agregar tarea
                   </button>
                 <!-- FIN Botón para agregar tarea -->
@@ -58,86 +58,62 @@
       </div>
     <!-- FIN Tabla de tareas -->
 
-
-    <!-- Loader -->
-      <div v-if="taskStore.loading" class="text-center">
-        <strong>Cargando...</strong>
-      </div>
-    <!-- FIN Loader -->
-
-
     <!-- Modal -->
-      <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
-        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full" @click.stop="stopPropagation">
+      <Modal :isOpen="isModalOpen" @update:isOpen="isModalOpen = $event" @closedFromOverlay="resetForm">
+        <h3 class="font-bold text-lg mb-4"> Agregar Nueva Tarea</h3>
 
-          <h3 class="font-bold text-lg mb-4"> Agregar Nueva Tarea</h3>
-
-          <div class="mb-4">
+        <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
-              Título
+            Título
             </label>
             <input
-              id="title"
-              class="rounded w-full py-2 px-3 text-gray-700 leading-tight border"
-              type="text"
-              placeholder="Título de la tarea"
-              v-model="title"
+            id="title"
+            class="rounded w-full py-2 px-3 text-gray-700 leading-tight border"
+            type="text"
+            placeholder="Título de la tarea"
+            v-model="title"
             >
-          </div>
+        </div>
 
-          <br>
+        <br>
 
-          <div class="mb-4">
+        <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-              Descripción
+            Descripción
             </label>
             <input
-              id="description"
-              class="rounded w-full py-2 px-3 text-gray-700 leading-tight border"
-              type="text"
-              placeholder="Descripción de la tarea"
-              v-model="description"
+            id="description"
+            class="rounded w-full py-2 px-3 text-gray-700 leading-tight border"
+            type="text"
+            placeholder="Descripción de la tarea"
+            v-model="description"
             >
-          </div>
+        </div>
 
-          <br>
+        <br>
 
-          <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between">
             <button @click="closeModal" type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Cancelar
             </button>
 
-            <button @click="createTask()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <button @click="createTask" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
               Agregar Tarea
             </button>
-          </div>
-
         </div>
-      </div>
+      </Modal>
     <!-- FIN Modal -->
 
+
   </div>
+
 </template>
 
 <script setup>
 import { ref, reactive, computed   } from 'vue';
 import { useTaskStore } from '../../stores/tareas/index'
+import Modal from '@/components/Ui/Modal.vue'
 
-  //Control del Modal
-  //---------------------------------------------
-    const isModalOpen = ref(false);
-
-    function openModal() {
-      isModalOpen.value = true;
-    }
-
-    function closeModal() {
-      isModalOpen.value = false;
-      title.value = '';
-      description.value = '';
-    }
-
-  //---------------------------------------------
 
   //Definimos la nueva store a usar
   //---------------------------------------------
@@ -149,16 +125,15 @@ import { useTaskStore } from '../../stores/tareas/index'
   //---------------------------------------------
     const title = ref('')
     const description = ref('')
+    const isModalOpen = ref(false);
   //---------------------------------------------
 
   //Funciones de la vista
   //---------------------------------------------
     function createTask() {
       taskStore.addTask({title: title.value, description: description.value, completed: 0}) //el completed lo inicializamos en 0 para indicar que la tarea no ha sido completada
-
-      title.value = ''
-      description.value = ''
       isModalOpen.value = false
+      resetForm()
     }
 
     function deleteTask(id) {
@@ -172,32 +147,24 @@ import { useTaskStore } from '../../stores/tareas/index'
     function updateFilter(value) {
       taskStore.setFilter(value);
     }
+
+    function resetForm() {
+      title.value = '';
+      description.value = '';
+    }
+
+    function closeModal() {
+      isModalOpen.value = false;
+      resetForm()
+    }
   //---------------------------------------------
 </script>
 
 <style>
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
-}
-
 .done {
   text-decoration: line-through;
   opacity: 0.7;
-}
-
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
 }
 </style>
 

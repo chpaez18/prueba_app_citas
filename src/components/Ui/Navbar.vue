@@ -23,8 +23,9 @@
         <!-- Desktop Menu -->
         <div class="hidden sm:block">
           <div class="flex space-x-4">
-            <RouterLink to="/" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900">Inicio</RouterLink>
-            <RouterLink to="/tareas/listado" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900">Listado de Tareas</RouterLink>
+            <RouterLink v-for="link in links" :key="link.name" :to="link.to" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900">
+              {{ link.name }}
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -32,17 +33,29 @@
       <!-- Mobile Menu -->
       <div :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" class="absolute z-10  w-48 orounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none mt-10 sm:hidden">
         <div class="px-2 pt-2 pb-3 space-y-1">
-          <RouterLink to="/" class="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Inicio</RouterLink>
-          <RouterLink to="/tareas/listado" class="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Listado de Tareas</RouterLink>
+          <RouterLink v-for="link in links" :key="link.name" :to="link.to" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900">
+              {{ link.name }}
+          </RouterLink>
         </div>
       </div>
     </nav>
   </header>
 </template>
+
+
 <script setup>
 import { ref } from 'vue';
 
-const isMenuOpen = ref(false);
+  const isMenuOpen = ref(false);
+
+  //Construimos un array para facilitar agregar enlaces a futuro
+  //----------------------------------------------------------------
+    const links = [
+      { name: 'Inicio', to: '/' },
+      { name: 'Listado de Tareas', to: '/tareas/listado' },
+    ];
+  //----------------------------------------------------------------
+
 </script>
 
 <style scoped>
