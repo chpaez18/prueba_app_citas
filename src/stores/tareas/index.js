@@ -32,7 +32,6 @@ export const useTaskStore = defineStore('task', {
         },
 
 
-
         addTask(taskData){
 
             //Activamos el loading
@@ -49,6 +48,25 @@ export const useTaskStore = defineStore('task', {
         },
 
 
+        updateTask(id, updatedData) {
+
+            //Ubicamos el indice de la tarea en la lista
+            //--------------------------------------------------------------------
+                const taskIndex = this.tasksList.findIndex(task => task.id === id);
+            //--------------------------------------------------------------------
+
+            //Si la tarea existe, actualizamos sus datos
+            //--------------------------------------------------------------------
+                if (taskIndex !== -1) {
+                    /*
+                        Usamos el operador de propagacion ...this.tasksList[taskIndex]: se usa aquí para copiar todas las propiedades existentes de la tarea original en un nuevo objeto
+                        Usamos el operador de propagacion ...updatedData: que añade todas las propiedades del objeto updatedData al objeto resultante
+                    */
+                    this.tasksList[taskIndex] = { ...this.tasksList[taskIndex], ...updatedData };
+                }
+            //--------------------------------------------------------------------
+        },
+
         deleteTask(id){
 
             //Activamos el loading
@@ -61,6 +79,7 @@ export const useTaskStore = defineStore('task', {
             this.loading = false;
 
         },
+
 
         changeStatusTask(id){
 

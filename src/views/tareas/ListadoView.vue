@@ -4,7 +4,7 @@
 
     <!-- Tabla de tareas -->
       <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl px-4">
-          <div class="flex flex-col items-center w-full max-w-4xl px-4">
+          <div class="flex flex-col items-center w-full max-w-4xl px-4 animate__animated animate__fadeInUp">
 
             <!-- Contenedor para los controles superiores: dropdown y botón -->
               <div class="flex justify-between w-full mb-4">
@@ -22,7 +22,7 @@
 
                 <!-- Botón para agregar tarea -->
                   <button @click="isModalOpen = true" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Agregar tarea
+                    <i class="fa-solid fa-plus"></i> Agregar tarea
                   </button>
                 <!-- FIN Botón para agregar tarea -->
 
@@ -48,11 +48,11 @@
                   <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ (task.description ? task.description : "N/A") }}</td>
                   <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.completed ? 'Completada' : 'Pendiente' }}</td>
                   <td class="text-center">
-                    <button v-if="!task.completed" @click="changeStatus(task.id)" class="bg-blue-500 text-white p-1 rounded">Marcar como completa</button>
+                    <button v-tooltip="'Marcar tarea como Completada'" v-if="!task.completed" @click="changeStatus(task.id)" class="bg-green-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-circle-check"></i></button>
                     {{''}}
-                    <button @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded">Actualizar</button>
+                    <button v-tooltip="'Modificar tarea'" @click="openModalForEdit(task)" class="bg-blue-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-pen-to-square"></i> </button>
                     {{''}}
-                    <button @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded">Eliminar</button>
+                    <button v-tooltip="'Eliminar'" @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded"> <i style="width:35px" class="fa-solid fa-trash-can"></i> </button>
                   </td>
                 </tr>
               </tbody>
@@ -63,7 +63,12 @@
 
     <!-- Modal -->
       <Modal :isOpen="isModalOpen" @update:isOpen="isModalOpen = $event" @closedFromOverlay="resetForm">
-        <h3 class="font-bold text-lg mb-4"> Agregar Nueva Tarea</h3>
+        <h3 class="font-bold text-lg mb-4">
+          {{ isEditing ? 'Modificar Tarea' : 'Agregar Nueva Tarea' }}
+        </h3>
+        <hr>
+
+        <br>
 
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
@@ -100,8 +105,9 @@
               Cancelar
             </button>
 
-            <button @click="createTask" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Agregar Tarea
+            <button @click="createOrUpdateTask" type="button"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              {{ isEditing ? 'Guardar Cambios' : 'Agregar Tarea' }}
             </button>
         </div>
       </Modal>
@@ -120,20 +126,24 @@ import { useTaskStore } from '../../stores/tareas/index';
   //Definimos la nueva store a usar
   //---------------------------------------------
     const taskStore = useTaskStore()
-    const filteredTasks = computed(() => taskStore.filteredTasks);
     const swal = useSweetAlert();
   //---------------------------------------------
 
-  //Definimos la variables reactivas para guardar la tarea
+  //Definimos la variables reactivas
   //---------------------------------------------
     const title = ref('')
     const description = ref('')
+
+    const filteredTasks = computed(() => taskStore.filteredTasks)
+    const isEditing = computed(() => currentTaskId.value !== null) //Esta variable cambiara segun el valor de currentTaskId
+    const currentTaskId = ref(null);
     const isModalOpen = ref(false);
   //---------------------------------------------
 
   //Funciones de la vista
   //---------------------------------------------
-    function createTask() {
+
+    function createOrUpdateTask() {
 
       //Validamos que el campo title no este vacio
       //----------------------------------------------------------------
@@ -147,25 +157,50 @@ import { useTaskStore } from '../../stores/tareas/index';
         }
       //----------------------------------------------------------------
 
-      //Agregamos la tarea a la store
-      //----------------------------------------------------------------
-        taskStore.addTask({title: title.value, description: description.value, completed: 0}) //el completed lo inicializamos en 0 para indicar que la tarea no ha sido completada
-      //----------------------------------------------------------------
+      //Validamos si estamos creando o actualizando una tarea, esto por medio del currentTaskId
+      //-----------------------------------------------------------------------------------------
+        if (currentTaskId.value === null) { //Si es creacion
 
-      //Mostramos un mensaje de confirmación
-      //----------------------------------------------------------------
-        swal.fire({
-          title: '¡Genial!',
-          text: 'Tu tarea se ha creado correctamente',
-          icon: 'success'
-        });
-      //----------------------------------------------------------------
+          taskStore.addTask({
+            title: title.value,
+            description: description.value,
+            completed: 0
+          });
+
+          //Mostramos un mensaje de confirmación
+          //----------------------------------------------------------------
+            swal.fire({
+              title: '¡Genial!',
+              text: 'Tu tarea se ha creado correctamente',
+              icon: 'success'
+            });
+          //----------------------------------------------------------------
+
+        } else { //Si es modificacion
+
+          taskStore.updateTask(currentTaskId.value, {
+            title: title.value,
+            description: description.value
+          });
+
+          //Mostramos un mensaje de confirmación
+          //----------------------------------------------------------------
+            swal.fire({
+              title: 'Actualizado',
+              text: 'Tu tarea se ha actualizado correctamente',
+              icon: 'success'
+            });
+          //----------------------------------------------------------------
+
+        }
+      //-----------------------------------------------------------------------------------------
 
       //Cerramos el modal y reseteamos el formulario
       //----------------------------------------------------------------
-        isModalOpen.value = false
-        resetForm()
+        isModalOpen.value = false;
+        resetForm();
       //----------------------------------------------------------------
+
     }
 
     function deleteTask(id) {
@@ -213,10 +248,18 @@ import { useTaskStore } from '../../stores/tareas/index';
       isModalOpen.value = false;
       resetForm()
     }
+
+    function openModalForEdit(task) {
+      title.value = task.title;
+      description.value = task.description;
+      currentTaskId.value = task.id; //Al cambiar el valor de currentTaskId, se activa la edición
+      isModalOpen.value = true;
+    }
   //---------------------------------------------
 </script>
 
 <style>
+@import 'animate.css';
 
 .done {
   text-decoration: line-through;

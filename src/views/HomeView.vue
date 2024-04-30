@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="greetings">
+    <div class="greetings animate__animated animate__fadeIn">
       <h1 class="green">Bienvenido</h1>
     </div>
   </div>

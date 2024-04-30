@@ -1,6 +1,6 @@
 <template>
     <div v-if="isOpen" class="modal-overlay" @click.self="closeFromOverlay">
-        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full" @click.stop="stopPropagation">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full animate__animated animate__fadeInUp" @click.stop="stopPropagation">
             <slot></slot>
         </div>
     </div>
@@ -23,14 +23,15 @@
     //Definimos un metodo que nos permitira cerrar el modal
     //-------------------------------------------------------------------------------------------------
         function closeFromOverlay() {
-        emits('update:isOpen', false);
-        emits('closedFromOverlay');  //Aqui emitimos un evento para comunicar que el modal se cerro desde el overlay
+            emits('update:isOpen', false);
+            emits('closedFromOverlay');  //Aqui emitimos un evento para comunicar que el modal se cerro desde el overlay
         }
     //-------------------------------------------------------------------------------------------------
 </script>
 
 
 <style>
+@import 'animate.css';
 
 .modal-overlay {
   position: fixed;
