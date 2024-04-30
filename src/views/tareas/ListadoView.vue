@@ -11,6 +11,7 @@
 
                 <!-- Dropdown de filtro -->
                   <div class="relative">
+                    <!-- $event.target.value captura el valor seleccionado del dropwdown -->
                     <select @change="updateFilter($event.target.value)" class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
                       <option value="all">Todas las tareas</option>
                       <option value="completed">Tareas Completadas</option>
@@ -29,30 +30,32 @@
             <!-- FIN Contenedor para los controles superiores: dropdown y botón -->
 
             <table class="table-auto w-full rounded-lg bg-white shadow-lg">
-                  <thead>
-                    <tr class="bg-gray-200 text-gray-800">
-                      <th class="px-4 py-3">Título de la Tarea</th>
-                      <th class="px-4 py-3">Descripción</th>
-                      <th class="px-4 py-3">Estado</th>
-                      <th class="px-4 py-3">Acciones</th>
-                    </tr>
-                  </thead>
+              <thead>
+                <tr class="bg-gray-200 text-gray-800">
+                  <th class="px-4 py-3">Título de la Tarea</th>
+                  <th class="px-4 py-3">Descripción</th>
+                  <th class="px-4 py-3">Estado</th>
+                  <th class="px-4 py-3">Acciones</th>
+                </tr>
+              </thead>
 
-                  <tbody>
+              <tbody>
 
-                    <tr v-if="filteredTasks.length == 0" class="text-center"><td colspan="4" class="p-5">No se han registrado tareas...</td></tr>
+                <tr v-if="filteredTasks.length == 0" class="text-center"><td colspan="4" class="p-5">No se han registrado tareas...</td></tr>
 
-                    <tr v-else-if="filteredTasks.length" v-for="task in filteredTasks" :key="task.id" class="text-center border-b border-gray-200">
-                      <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.title }}</td>
-                      <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.description }}</td>
-                      <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.completed ? 'Completada' : 'Pendiente' }}</td>
-                      <td class="text-center">
-                        <button v-if="!task.completed" @click="changeStatus(task.id)" class="bg-blue-500 text-white p-1 rounded">Marcar como completa</button>
-                        {{''}}
-                        <button @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded">Eliminar</button>
-                      </td>
-                    </tr>
-                  </tbody>
+                <tr v-else-if="filteredTasks.length" v-for="task in filteredTasks" :key="task.id" class="text-center border-b border-gray-200">
+                  <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.title }}</td>
+                  <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ (task.description ? task.description : "N/A") }}</td>
+                  <td v-bind:class="{ done: task.completed }" class="px-4 py-3">{{ task.completed ? 'Completada' : 'Pendiente' }}</td>
+                  <td class="text-center">
+                    <button v-if="!task.completed" @click="changeStatus(task.id)" class="bg-blue-500 text-white p-1 rounded">Marcar como completa</button>
+                    {{''}}
+                    <button @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded">Actualizar</button>
+                    {{''}}
+                    <button @click="deleteTask(task.id)" class="bg-red-500 text-white p-1 rounded">Eliminar</button>
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
       </div>
@@ -64,7 +67,7 @@
 
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
-            Título
+              Título
             </label>
             <input
             id="title"
@@ -104,21 +107,21 @@
       </Modal>
     <!-- FIN Modal -->
 
-
   </div>
 
 </template>
 
 <script setup>
 import { ref, reactive, computed   } from 'vue';
-import { useTaskStore } from '../../stores/tareas/index'
-import Modal from '@/components/Ui/Modal.vue'
-
+import Modal from '@/components/Ui/Modal.vue';
+import { useSweetAlert } from '@/composables/useSweetAlert';
+import { useTaskStore } from '../../stores/tareas/index';
 
   //Definimos la nueva store a usar
   //---------------------------------------------
     const taskStore = useTaskStore()
     const filteredTasks = computed(() => taskStore.filteredTasks);
+    const swal = useSweetAlert();
   //---------------------------------------------
 
   //Definimos la variables reactivas para guardar la tarea
@@ -131,13 +134,66 @@ import Modal from '@/components/Ui/Modal.vue'
   //Funciones de la vista
   //---------------------------------------------
     function createTask() {
-      taskStore.addTask({title: title.value, description: description.value, completed: 0}) //el completed lo inicializamos en 0 para indicar que la tarea no ha sido completada
-      isModalOpen.value = false
-      resetForm()
+
+      //Validamos que el campo title no este vacio
+      //----------------------------------------------------------------
+        if (!title.value) {
+          swal.fire({
+            title: '¡Atención!',
+            text: 'El campo título es obligatorio',
+            icon: 'warning'
+          });
+          return;
+        }
+      //----------------------------------------------------------------
+
+      //Agregamos la tarea a la store
+      //----------------------------------------------------------------
+        taskStore.addTask({title: title.value, description: description.value, completed: 0}) //el completed lo inicializamos en 0 para indicar que la tarea no ha sido completada
+      //----------------------------------------------------------------
+
+      //Mostramos un mensaje de confirmación
+      //----------------------------------------------------------------
+        swal.fire({
+          title: '¡Genial!',
+          text: 'Tu tarea se ha creado correctamente',
+          icon: 'success'
+        });
+      //----------------------------------------------------------------
+
+      //Cerramos el modal y reseteamos el formulario
+      //----------------------------------------------------------------
+        isModalOpen.value = false
+        resetForm()
+      //----------------------------------------------------------------
     }
 
     function deleteTask(id) {
-      taskStore.deleteTask(id)
+
+      swal.fire({
+        title: 'Precaución',
+        text: "¿Realmente deseas eliminar la tarea?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, Eliminar!',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+      }).then((result) => {
+
+        if (result.isConfirmed) {
+
+          taskStore.deleteTask(id)
+
+          swal.fire(
+            'Eliminada!',
+            'La tarea ha sido eliminada.',
+            'success'
+          );
+        }
+      });
+
     }
 
     function changeStatus(id) {

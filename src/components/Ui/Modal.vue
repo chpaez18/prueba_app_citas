@@ -7,7 +7,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
 
     //Definimos un prop que nos permitira controlar la visibilidad del modal
     //-------------------------------------------------------------------------

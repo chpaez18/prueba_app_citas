@@ -39,7 +39,7 @@ export const useTaskStore = defineStore('task', {
             this.loading = true;
 
             //Agregamos la tarea a la lista
-            this.tasksList.push({
+            this.tasksList.unshift({
                 id: generateID(),
                 ...taskData
             });
